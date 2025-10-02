@@ -1,58 +1,81 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { supabase } from "../../supabaseClient";
 import { CSVLink } from "react-csv";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
-export default function StudentsPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [students, setStudents] = useState([]);
-  const [zipBlob, setZipBlob] = useState(null);
+// Define a Student type
+type Student = {
+  id: number;
+  name: string;
+  email: string;
+  created_at: string;
+};
 
+export default function StudentsPage() {
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [students, setStudents] = useState<Student[]>([]);
+
+  // Fetch students
   useEffect(() => {
     fetchStudents();
   }, []);
 
   async function fetchStudents() {
-    const { data } = await supabase.from("users").select("*").order("id");
-    setStudents(data);
+    const { data, error } = await supabase
+      .from<Student, Student>("users") // ✅ Add 2 type arguments
+      .select("*")
+      .order("id");
+    if (error) console.error(error);
+    else if (data) setStudents(data);
   }
 
-  async function addStudent(e) {
+  // Add student
+  async function addStudent(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!name || !email) return;
 
     const { data, error } = await supabase
-      .from("users")
+      .from<Student, Student>("users") // ✅ Add 2 type arguments
       .insert([{ name, email }])
       .select();
+
     if (error) console.error(error);
-    else setStudents([...students, ...data]);
+    else if (data) setStudents([...students, ...data]);
 
     setName("");
     setEmail("");
   }
 
   // CSV data
-  const csvData = students.map(({ id, name, email, created_at }) => ({
-    ID: id,
-    Name: name,
-    Email: email,
-    "Created At": new Date(created_at).toLocaleString(),
+  const csvData = students.map((s) => ({
+    ID: s.id,
+    Name: s.name,
+    Email: s.email,
+    CreatedAt: new Date(s.created_at).toLocaleString(),
   }));
 
   // Create ZIP
   async function createZip() {
     const zip = new JSZip();
-    const csvContent = csvData
-      .map((row) => Object.values(row).join(","))
+    const csvContent = [
+      ["ID", "Name", "Email", "CreatedAt"],
+      ...students.map((s) => [
+        s.id,
+        s.name,
+        s.email,
+        new Date(s.created_at).toLocaleString(),
+      ]),
+    ]
+      .map((e) => e.join(","))
       .join("\n");
+
     zip.file("students.csv", csvContent);
     const blob = await zip.generateAsync({ type: "blob" });
     saveAs(blob, "students.zip");
-    setZipBlob(blob);
   }
 
   return (
@@ -124,9 +147,7 @@ export default function StudentsPage() {
                 <td className="p-2 border">{s.id}</td>
                 <td className="p-2 border">{s.name}</td>
                 <td className="p-2 border">{s.email}</td>
-                <td className="p-2 border">
-                  {new Date(s.created_at).toLocaleString()}
-                </td>
+                <td className="p-2 border">{new Date(s.created_at).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
