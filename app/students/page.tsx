@@ -27,12 +27,12 @@ export default function StudentsPage() {
   // Fetch students from Supabase
   async function fetchStudents() {
     const { data, error } = await supabase
-      .from<Student, "users">("users") // ✅ Two type arguments
+      .from("users")         // ✅ Only table name here
       .select("*")
       .order("id");
 
     if (error) console.error(error);
-    else if (data) setStudents(data);
+    else if (data) setStudents(data as Student[]);  // ✅ Cast to Student[]
   }
 
   // Add a new student
@@ -41,12 +41,12 @@ export default function StudentsPage() {
     if (!name || !email) return;
 
     const { data, error } = await supabase
-      .from<Student, "users">("users") // ✅ Two type arguments
+      .from("users")         // ✅ Only table name here
       .insert([{ name, email }])
       .select();
 
     if (error) console.error(error);
-    else if (data) setStudents([...students, ...data]);
+    else if (data) setStudents([...students, ...(data as Student[])]);
 
     setName("");
     setEmail("");
