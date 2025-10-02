@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { supabase } from "../supabaseClient"; // adjust path if needed
+import { supabase } from "../../supabaseClient";
+ // adjust path if needed
 import { CSVLink } from "react-csv";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
