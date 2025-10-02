@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { supabase } from "../../supabaseClient";
- // adjust path if needed
+import { supabase } from "../../supabaseClient"; // adjust path if needed
 import { CSVLink } from "react-csv";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
@@ -28,7 +27,7 @@ export default function StudentsPage() {
   // Fetch students from Supabase
   async function fetchStudents() {
     const { data, error } = await supabase
-      .from<Student, Student>("users") // ✅ Two type arguments
+      .from<Student>("users") // ✅ Only one type argument
       .select("*")
       .order("id");
 
@@ -42,7 +41,7 @@ export default function StudentsPage() {
     if (!name || !email) return;
 
     const { data, error } = await supabase
-      .from<Student, Student>("users") // ✅ Two type arguments
+      .from<Student>("users") // ✅ Only one type argument
       .insert([{ name, email }])
       .select();
 
