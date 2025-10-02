@@ -27,7 +27,7 @@ export default function StudentsPage() {
   // Fetch students from Supabase
   async function fetchStudents() {
     const { data, error } = await supabase
-      .from<Student>("users") // ✅ Only one type argument
+      .from<Student, "users">("users") // ✅ Two type arguments
       .select("*")
       .order("id");
 
@@ -41,7 +41,7 @@ export default function StudentsPage() {
     if (!name || !email) return;
 
     const { data, error } = await supabase
-      .from<Student>("users") // ✅ Only one type argument
+      .from<Student, "users">("users") // ✅ Two type arguments
       .insert([{ name, email }])
       .select();
 
